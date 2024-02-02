@@ -1,19 +1,33 @@
 import { getFileAsString } from "./utils/fileReader";
 
-export const extract = async (filePath) => {
+type JsonObj = {
+  [key: string]: string;
+};
+
+export const extract = async (filePath: string) => {
   let result = [];
-  let str = await getFileAsString("readme.md");
-  result = processIt(str, []);
+  let str = await getFileAsString(filePath);
+  result = parse(str, []);
   return result;
 };
 
-function processIt(rawData, res) {
+export const extractFromLink = async (link: string) => {
+  const res: Response = await fetch(link);
+  const response = await res.json();
+  const content = await response.content;
+  const binary = Buffer.from(content);
+  const result = parse(binary.toString(), []);
+
+  return result;
+};
+
+function parse(rawData: string, res: JsonObj[]) {
   const result = [];
 
   const trimmed = rawData.trim();
   const eachRow = trimmed.split("\n");
 
-  const headerParser = (row) => {
+  const headerParser = (row: string) => {
     return row
       .split("|")
       .map((r) => r.trim())
@@ -28,7 +42,7 @@ function processIt(rawData, res) {
 
   for (let eachCol of theRest) {
     let current_parsed = headerParser(eachCol);
-    let currentObj = {};
+    let currentObj: JsonObj = {};
 
     let counter = 0;
 
@@ -64,116 +78,3 @@ function processIt(rawData, res) {
   }
   return result;
 }
-
-export const extractFromLink = async (link) => {
-  
-  const res = await fetch(link);
-  const response = await res.json();
-  const content = await response.content;
-  const binaryString = await atob(content);
-  const result = processIt(binaryString, []);
-  
-  return result 
-
-
-};
-
-const extractFromLink1 = async () => {
-  const url =
-    "https://api.github.com/repos/workos/awesome-developer-experience/git/blobs/fe28415d2d46ac325a12df8292f7cc005aef57ce";
-
-  fetch(url)
-    .then((response) => response.json())
-    .then((data) => {
-      // Retrieve the Base64 encoded content from the response
-      const content = data.content;
-
-      // Decode the Base64 content into a binary string
-      const binaryString = atob(content);
-
-      const firstPipe = binaryString.indexOf("|");
-
-      const lineBefore = binaryString.slice(firstPipe - 2, binaryString.length);
-      // console.log("The binary data: ", title);
-
-      const trimmedTableMarkdown = binaryString.trim();
-
-      // Split the table content into rows
-      const rows = trimmedTableMarkdown.split("\n");
-
-      // Extract the table headers from the first row
-      const headers = rows[0]
-        .split("|")
-        .map((header) => header.trim())
-        .filter((header) => header !== "");
-
-      // Extract the table data from the remaining rows
-      const datas = rows.slice(2).map((row) => {
-        const columns = row
-          .split("|")
-          .map((column) => column.trim())
-          .filter((column) => column !== "");
-        const rowData = {};
-        headers.forEach((header, index) => {
-          if (header !== "Website") {
-            rowData[header] = columns[index];
-          } else {
-            const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/;
-            const linkMatch = columns[index].match(linkRegex);
-            if (linkMatch) {
-              rowData["Link"] = {
-                text: linkMatch[1],
-                url: linkMatch[2],
-              };
-            } else {
-              rowData["Link"] = {
-                text: "",
-                url: "",
-              };
-            }
-          }
-        });
-        return rowData;
-      });
-
-      // Convert the table data to JSON format
-      const jsonData = JSON.stringify(datas, null, 2);
-      // console.log('The data is : ' , jsonData)
-
-      // Use the binary string as needed
-
-      // the time to convert the readme file to the actual JSON file
-      // const trimmedTableMarkdown = binaryString.trim();
-      // console.log(Extractor.extractObject(trimmedTableMarkdown, "columns", true));
-
-      // // Split the table content into rows
-      // const rows = trimmedTableMarkdown.split("\n");
-
-      // // Extract the table headers from the first row
-      // const headers = rows[0]
-      //   .split("|")
-      //   .map((header) => header.trim())
-      //   .filter((header) => header !== "");
-
-      // // Extract the table data from the remaining rows
-      // const datas = rows.slice(2).map((row) => {
-      //   const columns = row
-      //     .split("|")
-      //     .map((column) => column.trim())
-      //     .filter((column) => column !== "");
-      //   const rowData = {};
-      //   headers.forEach((header, index) => {
-      //     rowData[header] = columns[index];
-      //   });
-      //   return rowData;
-      // });
-
-      // // Convert the table data to JSON format
-      // const jsonData = JSON.stringify(datas, null, 2);
-
-      // console.log("The json data : ", jsonData);
-    })
-    .catch((error) => {
-      console.error("Error:", error);
-    });
-};

@@ -1,6 +1,11 @@
 import fs from "fs";
 
-function readFileContents(filePath, callback) {
+type CallBack = (
+  err: NodeJS.ErrnoException | null,
+  data: string | null
+) => void;
+
+function readFileContents(filePath: string, callback: CallBack) {
   fs.readFile(filePath, "utf8", (err, data) => {
     if (err) {
       callback(err, null);
@@ -11,7 +16,7 @@ function readFileContents(filePath, callback) {
   });
 }
 
-export function getFileAsString(filePath) {
+export function getFileAsString(filePath: string): Promise<string> {
   return new Promise((resolve, reject) => {
     readFileContents(filePath, (err, data) => {
       if (err) {
@@ -19,7 +24,7 @@ export function getFileAsString(filePath) {
         return;
       }
 
-      resolve(data);
+      resolve(data!);
     });
   });
 }
