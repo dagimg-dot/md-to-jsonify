@@ -1,5 +1,4 @@
-import fs from "fs";
-import { getFileAsString } from "./filehelper.js";
+import { getFileAsString } from "./utils/fileReader";
 
 export const extract = async (filePath) => {
   let result = [];

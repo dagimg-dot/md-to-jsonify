@@ -1,6 +1,5 @@
 import fs from "fs";
 
-
 function readFileContents(filePath, callback) {
   fs.readFile(filePath, "utf8", (err, data) => {
     if (err) {
