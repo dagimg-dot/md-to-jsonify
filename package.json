@@ -6,12 +6,13 @@
   "main": "script.js",
   "scripts": {
     "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@types/node": "17.0.45",
-    "typescript": "5.3.3"
+    "@types/node": "^20.11.16",
+    "typescript": "5.3.3",
+    "vitest": "^1.2.2"
   }
 }
